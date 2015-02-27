@@ -54,6 +54,8 @@ def ksp_yen(graph, node_start, node_end, max_k=2):
     if not A[0]['path']: return A
     
     for k in range(1, max_k):
+        if k>1: # update distance dictionnary
+            distances=make_distances(graph, A[-1]['path'])
         for i in range(0, len(A[-1]['path']) - 1):
             node_spur = A[-1]['path'][i]
             path_root = A[-1]['path'][:i+1]
@@ -122,7 +124,7 @@ def dijkstra(graph, node_start, node_end=None):
                 Q[u] = cost_vu
                 previous[u] = v
 
-    if node_end:
+    if node_end!=None:
         return {'cost': distances[node_end], 
                 'path': path(previous, node_start, node_end)}
     else:
@@ -153,3 +155,20 @@ def path(previous, node_start, node_end):
     
     route.reverse()
     return route
+
+
+## Returns the cumulative distance along the given path.
+#
+# @param graph A digraph of class Graph.
+# @param path a list of nodes of the graph.
+#
+# @retval [] Array of cumulative cost.
+#
+def make_distances(graph, path):
+    distances = {path[0]:0.}
+    cost = 0.
+    for i in range(len(path)-1):
+        cost += graph[path[i]][path[i+1]]
+        distances[path[i+1]] = cost 
+    return distances
+        
