@@ -59,8 +59,8 @@ def ksp_yen(graph, node_start, node_end, max_k=2):
         for i in range(0, len(A[-1]['path']) - 1):
             node_spur = A[-1]['path'][i]
             path_root = A[-1]['path'][:i+1]
-            
             edges_removed = []
+
             for path_k in A:
                 curr_path = path_k['path']
                 if len(curr_path) > i and path_root == curr_path[:i+1]:
@@ -68,6 +68,29 @@ def ksp_yen(graph, node_start, node_end, max_k=2):
                     if cost == -1:
                         continue
                     edges_removed.append([curr_path[i], curr_path[i+1], cost])
+            
+            # Remove all links to and from all nodes in root path except the spur node.
+            # In this graph structure, it's the same as removing the node.
+            for node in path_root:
+                if node == node_spur:
+                    continue
+
+                # Remove all links from the node
+                links_from = graph[node]
+
+                for l in links_from:
+                    cost = graph.remove_edge(node, l)
+                    if cost == -1:
+                        continue
+                    edges_removed.append([node, l, cost])
+
+                # Remove all links to the node
+                nodes_with_links_to = [l for l in graph if graph[l].has_key(node)]
+                for n in nodes_with_links_to:
+                    cost = graph.remove_edge(n, node)
+                    if cost == -1:
+                        continue
+                    edges_removed.append([n, node, cost])
             
             path_spur = dijkstra(graph, node_spur, node_end)
             
@@ -124,7 +147,7 @@ def dijkstra(graph, node_start, node_end=None):
                 Q[u] = cost_vu
                 previous[u] = v
 
-    if node_end!=None:
+    if node_end:
         return {'cost': distances[node_end], 
                 'path': path(previous, node_start, node_end)}
     else:
@@ -171,4 +194,3 @@ def make_distances(graph, path):
         cost += graph[path[i]][path[i+1]]
         distances[path[i+1]] = cost 
     return distances
-        
